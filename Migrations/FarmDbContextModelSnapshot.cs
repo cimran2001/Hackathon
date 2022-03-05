@@ -30,13 +30,13 @@ namespace Hackathon.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<double?>("AppliedHA")
+                    b.Property<double>("AppliedHA")
                         .HasColumnType("float");
 
-                    b.Property<DateTime?>("Date")
+                    b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("Depth")
+                    b.Property<int>("Depth")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -52,7 +52,7 @@ namespace Hackathon.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<double?>("AppliedHA")
+                    b.Property<double>("AppliedHA")
                         .HasColumnType("float");
 
                     b.Property<long>("NumberOfTimes")
@@ -87,25 +87,25 @@ namespace Hackathon.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int>("AutumnPloughingId")
+                    b.Property<int?>("AutumnPloughingId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CultivationId")
+                    b.Property<int?>("CultivationId")
                         .HasColumnType("int");
 
-                    b.Property<int>("EfficiencyId")
+                    b.Property<int?>("EfficiencyId")
                         .HasColumnType("int");
 
-                    b.Property<int>("FarmerId")
+                    b.Property<int?>("FarmerId")
                         .HasColumnType("int");
 
-                    b.Property<int>("FertilizingId")
+                    b.Property<int?>("FertilizingId")
                         .HasColumnType("int");
 
                     b.Property<double>("HA")
                         .HasColumnType("float");
 
-                    b.Property<int>("IrrigationId")
+                    b.Property<int?>("IrrigationId")
                         .HasColumnType("int");
 
                     b.Property<long>("NO")
@@ -114,23 +114,23 @@ namespace Hackathon.Migrations
                     b.Property<long>("NumberOfField")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("PlantingId")
+                    b.Property<int?>("PlantingId")
                         .HasColumnType("int");
 
-                    b.Property<int>("QualityId")
+                    b.Property<int?>("QualityId")
                         .HasColumnType("int");
 
                     b.Property<string>("Region")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("SeedingId")
+                    b.Property<int?>("SeedingId")
                         .HasColumnType("int");
 
-                    b.Property<int>("SpringPloughingId")
+                    b.Property<int?>("SpringPloughingId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ToppingId")
+                    b.Property<int?>("ToppingId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -283,13 +283,13 @@ namespace Hackathon.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<double?>("AppliedHA")
+                    b.Property<double>("AppliedHA")
                         .HasColumnType("float");
 
-                    b.Property<DateTime?>("Date")
+                    b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("Depth")
+                    b.Property<int>("Depth")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -320,69 +320,47 @@ namespace Hackathon.Migrations
                 {
                     b.HasOne("Hackathon.Models.AutumnPloughing", "AutumnPloughing")
                         .WithMany()
-                        .HasForeignKey("AutumnPloughingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("AutumnPloughingId");
 
                     b.HasOne("Hackathon.Models.Cultivation", "Cultivation")
                         .WithMany()
-                        .HasForeignKey("CultivationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CultivationId");
 
                     b.HasOne("Hackathon.Models.Efficiency", "Efficiency")
                         .WithMany()
-                        .HasForeignKey("EfficiencyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("EfficiencyId");
 
                     b.HasOne("Hackathon.Models.Farmer", "Farmer")
                         .WithMany()
-                        .HasForeignKey("FarmerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("FarmerId");
 
                     b.HasOne("Hackathon.Models.Fertilizing", "Fertilizing")
                         .WithMany()
-                        .HasForeignKey("FertilizingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("FertilizingId");
 
                     b.HasOne("Hackathon.Models.Irrigation", "Irrigation")
                         .WithMany()
-                        .HasForeignKey("IrrigationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("IrrigationId");
 
                     b.HasOne("Hackathon.Models.Planting", "Planting")
                         .WithMany()
-                        .HasForeignKey("PlantingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PlantingId");
 
                     b.HasOne("Hackathon.Models.Quality", "Quality")
                         .WithMany()
-                        .HasForeignKey("QualityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("QualityId");
 
                     b.HasOne("Hackathon.Models.Seeding", "Seeding")
                         .WithMany()
-                        .HasForeignKey("SeedingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("SeedingId");
 
                     b.HasOne("Hackathon.Models.SpringPloughing", "SpringPloughing")
                         .WithMany()
-                        .HasForeignKey("SpringPloughingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("SpringPloughingId");
 
                     b.HasOne("Hackathon.Models.Topping", "Topping")
                         .WithMany()
-                        .HasForeignKey("ToppingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ToppingId");
 
                     b.Navigation("AutumnPloughing");
 

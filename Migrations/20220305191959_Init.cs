@@ -10,34 +10,36 @@ namespace Hackathon.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "AutumnPloughing",
+                name: "AutumnPloughings",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    AppliedHA = table.Column<double>(type: "float", nullable: true),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Depth = table.Column<int>(type: "int", nullable: true)
+                    AppliedHA = table.Column<double>(type: "float", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Depth = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AutumnPloughing", x => x.Id);
+                    table.PrimaryKey("PK_AutumnPloughings", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Cultivation",
+                name: "Cultivations",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1")
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    AppliedHA = table.Column<double>(type: "float", nullable: false),
+                    NumberOfTimes = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Cultivation", x => x.Id);
+                    table.PrimaryKey("PK_Cultivations", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Efficiency",
+                name: "Efficiencies",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -46,11 +48,11 @@ namespace Hackathon.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Efficiency", x => x.Id);
+                    table.PrimaryKey("PK_Efficiencies", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Farmer",
+                name: "Farmers",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -59,11 +61,11 @@ namespace Hackathon.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Farmer", x => x.Id);
+                    table.PrimaryKey("PK_Farmers", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Fertilizing",
+                name: "Fertilizings",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -74,23 +76,25 @@ namespace Hackathon.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Fertilizing", x => x.Id);
+                    table.PrimaryKey("PK_Fertilizings", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Irrigation",
+                name: "Irrigations",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1")
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    AppliedHA = table.Column<double>(type: "float", nullable: false),
+                    NumberOfTimes = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Irrigation", x => x.Id);
+                    table.PrimaryKey("PK_Irrigations", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Planting",
+                name: "Plantings",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -101,11 +105,11 @@ namespace Hackathon.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Planting", x => x.Id);
+                    table.PrimaryKey("PK_Plantings", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Quality",
+                name: "Qualities",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -114,11 +118,11 @@ namespace Hackathon.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Quality", x => x.Id);
+                    table.PrimaryKey("PK_Qualities", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Seeding",
+                name: "Seedings",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -128,26 +132,26 @@ namespace Hackathon.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Seeding", x => x.Id);
+                    table.PrimaryKey("PK_Seedings", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "SpringPloughing",
+                name: "SpringPloughings",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    AppliedHA = table.Column<double>(type: "float", nullable: true),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Depth = table.Column<int>(type: "int", nullable: true)
+                    AppliedHA = table.Column<double>(type: "float", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Depth = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SpringPloughing", x => x.Id);
+                    table.PrimaryKey("PK_SpringPloughings", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Topping",
+                name: "Toppings",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -157,7 +161,7 @@ namespace Hackathon.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Topping", x => x.Id);
+                    table.PrimaryKey("PK_Toppings", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -168,89 +172,78 @@ namespace Hackathon.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     NO = table.Column<long>(type: "bigint", nullable: false),
                     Region = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FarmerId = table.Column<int>(type: "int", nullable: false),
+                    FarmerId = table.Column<int>(type: "int", nullable: true),
                     NumberOfField = table.Column<long>(type: "bigint", nullable: false),
                     HA = table.Column<double>(type: "float", nullable: false),
-                    AutumnPloughingId = table.Column<int>(type: "int", nullable: false),
-                    SpringPloughingId = table.Column<int>(type: "int", nullable: false),
-                    SeedingId = table.Column<int>(type: "int", nullable: false),
-                    PlantingId = table.Column<int>(type: "int", nullable: false),
-                    IrrigationId = table.Column<int>(type: "int", nullable: false),
-                    CultivationId = table.Column<int>(type: "int", nullable: false),
-                    FertilizingId = table.Column<int>(type: "int", nullable: false),
-                    ToppingId = table.Column<int>(type: "int", nullable: false),
-                    EfficiencyId = table.Column<int>(type: "int", nullable: false),
-                    QualityId = table.Column<int>(type: "int", nullable: false)
+                    AutumnPloughingId = table.Column<int>(type: "int", nullable: true),
+                    SpringPloughingId = table.Column<int>(type: "int", nullable: true),
+                    SeedingId = table.Column<int>(type: "int", nullable: true),
+                    PlantingId = table.Column<int>(type: "int", nullable: true),
+                    IrrigationId = table.Column<int>(type: "int", nullable: true),
+                    CultivationId = table.Column<int>(type: "int", nullable: true),
+                    FertilizingId = table.Column<int>(type: "int", nullable: true),
+                    ToppingId = table.Column<int>(type: "int", nullable: true),
+                    EfficiencyId = table.Column<int>(type: "int", nullable: true),
+                    QualityId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Farms", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Farms_AutumnPloughing_AutumnPloughingId",
+                        name: "FK_Farms_AutumnPloughings_AutumnPloughingId",
                         column: x => x.AutumnPloughingId,
-                        principalTable: "AutumnPloughing",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalTable: "AutumnPloughings",
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Farms_Cultivation_CultivationId",
+                        name: "FK_Farms_Cultivations_CultivationId",
                         column: x => x.CultivationId,
-                        principalTable: "Cultivation",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalTable: "Cultivations",
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Farms_Efficiency_EfficiencyId",
+                        name: "FK_Farms_Efficiencies_EfficiencyId",
                         column: x => x.EfficiencyId,
-                        principalTable: "Efficiency",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalTable: "Efficiencies",
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Farms_Farmer_FarmerId",
+                        name: "FK_Farms_Farmers_FarmerId",
                         column: x => x.FarmerId,
-                        principalTable: "Farmer",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalTable: "Farmers",
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Farms_Fertilizing_FertilizingId",
+                        name: "FK_Farms_Fertilizings_FertilizingId",
                         column: x => x.FertilizingId,
-                        principalTable: "Fertilizing",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalTable: "Fertilizings",
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Farms_Irrigation_IrrigationId",
+                        name: "FK_Farms_Irrigations_IrrigationId",
                         column: x => x.IrrigationId,
-                        principalTable: "Irrigation",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalTable: "Irrigations",
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Farms_Planting_PlantingId",
+                        name: "FK_Farms_Plantings_PlantingId",
                         column: x => x.PlantingId,
-                        principalTable: "Planting",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalTable: "Plantings",
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Farms_Quality_QualityId",
+                        name: "FK_Farms_Qualities_QualityId",
                         column: x => x.QualityId,
-                        principalTable: "Quality",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalTable: "Qualities",
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Farms_Seeding_SeedingId",
+                        name: "FK_Farms_Seedings_SeedingId",
                         column: x => x.SeedingId,
-                        principalTable: "Seeding",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalTable: "Seedings",
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Farms_SpringPloughing_SpringPloughingId",
+                        name: "FK_Farms_SpringPloughings_SpringPloughingId",
                         column: x => x.SpringPloughingId,
-                        principalTable: "SpringPloughing",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalTable: "SpringPloughings",
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Farms_Topping_ToppingId",
+                        name: "FK_Farms_Toppings_ToppingId",
                         column: x => x.ToppingId,
-                        principalTable: "Topping",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalTable: "Toppings",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
@@ -315,37 +308,37 @@ namespace Hackathon.Migrations
                 name: "Farms");
 
             migrationBuilder.DropTable(
-                name: "AutumnPloughing");
+                name: "AutumnPloughings");
 
             migrationBuilder.DropTable(
-                name: "Cultivation");
+                name: "Cultivations");
 
             migrationBuilder.DropTable(
-                name: "Efficiency");
+                name: "Efficiencies");
 
             migrationBuilder.DropTable(
-                name: "Farmer");
+                name: "Farmers");
 
             migrationBuilder.DropTable(
-                name: "Fertilizing");
+                name: "Fertilizings");
 
             migrationBuilder.DropTable(
-                name: "Irrigation");
+                name: "Irrigations");
 
             migrationBuilder.DropTable(
-                name: "Planting");
+                name: "Plantings");
 
             migrationBuilder.DropTable(
-                name: "Quality");
+                name: "Qualities");
 
             migrationBuilder.DropTable(
-                name: "Seeding");
+                name: "Seedings");
 
             migrationBuilder.DropTable(
-                name: "SpringPloughing");
+                name: "SpringPloughings");
 
             migrationBuilder.DropTable(
-                name: "Topping");
+                name: "Toppings");
         }
     }
 }
