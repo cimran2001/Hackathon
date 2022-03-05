@@ -12,23 +12,45 @@ namespace Hackathon;
 class Program {
     public delegate void Logger(string? text);
     public static async Task Main() {
-        Logger logger = LogWithDate;
         using var db = new FarmDbContext();
 
         using var server = new HttpListener();
         server.Prefixes.Add("http://*:80/");
         server.Start();
 
+        Logger logger = LogWithDate;
         logger("Server has started.");
         logger("Waiting for connection.");
 
         while (true) {
-            var client = await server.GetContextAsync();
-            logger($"Client has connected from IP: {client.Request.RemoteEndPoint}");
-            using var writer = new StreamWriter(client.Response.OutputStream);
+            var context = await server.GetContextAsync();
+            logger($"Client has connected from IP: {context.Request.RemoteEndPoint}");
+            
+            var @params = context.Request.QueryString;
+            var callback = @params["callback"];
 
-            var json = JsonSerializer.Serialize(db.Farms);
+            var list = from farm in db.Farms
+                select new {
+                    id = farm.Id,
+                    region = farm.Region,
+                    farmer = $"{farm.Farmer}",
+                    n_fields = farm.NumberOfField,
+                    ha = farm.HA,
+                    autumn = (int)farm.GetPointsAutumn(),
+                    spring = (int)farm.GetPointsSpring(),
+                    seeding = (int)farm.GetPointsSeeding(),
+                    planting = (int)farm.GetPointsPlanting(),
+                    irrigation = (int)farm.GetPointsIrrigation(),
+                    cultivation = (int)farm.GetPointsCultivation(),
+                    fertilizing = (int)farm.GetPointsFertilizing(),
+                    topping = (int)farm.GetPointsTopping(),
+                    efficiency = (int)farm.GetPointsEfficiency(),
+                    quality = (int)farm.GetPointsQuality(),
+                    index = (int)farm.GetPoints(),
+                };
 
+            using var writer = new StreamWriter(context.Response.OutputStream);
+            string json = $"{callback}({JsonSerializer.Serialize(list)})";
             await writer.WriteAsync(json);
             await writer.FlushAsync();
         }
@@ -61,7 +83,6 @@ class Program {
             scoreDepth = 0;
         
         var score = ((scoreDate + scoreDepth) / 2) * (farm.AutumnPloughing.AppliedHA / farm.HA);
-
         return score;
     }
 
@@ -86,8 +107,8 @@ class Program {
             scoreDate = 0;
 
         var scoreDepth = 100.0;
-        if (farm.SpringPloughing.Depth < 25)
-            scoreDepth -= (25 - farm.SpringPloughing.Depth) * 10;
+        if (farm.SpringPloughing.Depth < 15)
+            scoreDepth -= (15 - farm.SpringPloughing.Depth) * 10;
         if (scoreDepth < 0)
             scoreDepth = 0;
         
@@ -223,10 +244,11 @@ class Program {
         if (farm.Efficiency is null)
             return 0.0;
         
-        if (farm.Efficiency.Tons >= 14)
+        if (farm.Efficiency.Tons >= 14000)
             return 100.0;
         
-        return 100.0 - 25 * (14 - farm.Efficiency.Tons);
+        var score = 100.0 - 25 * (14000 - farm.Efficiency.Tons) / 1000;
+        return score >= 0 ? score : 0.0;
     }
 
     public static async Task<double> GetPointsEfficiencyAsync(Farm farm) {
@@ -264,7 +286,7 @@ class Program {
                 + await GetPointsToppingAsync(farm)
                 + await GetPointsEfficiencyAsync(farm)
                 + await GetPointsQualityAsync(farm);
-            return sum;
+            return sum / 10;
         });
     }
 }

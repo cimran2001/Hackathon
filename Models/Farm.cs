@@ -33,6 +33,41 @@ public class Farm {
     public int? QualityId { get; set; }
     public virtual Quality? Quality { get; set; }
 
+    private double? pointsAutumn;
+    public double GetPointsAutumn() => pointsAutumn ??= Program.GetPointsAutumn(this);
+    
+    private double? pointsSpring;
+    public double GetPointsSpring() => pointsSpring ??= Program.GetPointsSpring(this);
+    
+    private double? pointsSeeding;
+    public double GetPointsSeeding() => pointsSeeding ??= Program.GetPointsSeeding(this);
+    
+    private double? planting;
+    public double GetPointsPlanting() => planting ??= Program.GetPointsPlanting(this);
+
+    private double? irrigation;
+    public double GetPointsIrrigation() => irrigation ??= Program.GetPointsIrrigation(this);
+
+    private double? cultivation;
+    public double GetPointsCultivation() => cultivation ??= Program.GetPointsCultivation(this);
+
+    private double? fertilizing;
+    public double GetPointsFertilizing() => fertilizing ??= Program.GetPointsFertilizing(this);
+
+    private double? topping;
+    public double GetPointsTopping() => topping ??= Program.GetPointsTopping(this);
+
+    private double? efficiency;
+    public double GetPointsEfficiency() => efficiency ??= Program.GetPointsEfficiency(this);
+
+    private double? quality;
+    public double GetPointsQuality() => quality ??= Program.GetPointsQuality(this);
+
+    private double ?score;
+    public double GetPoints() => score ??= (GetPointsAutumn() + GetPointsCultivation() + GetPointsEfficiency() 
+        + GetPointsFertilizing() + GetPointsIrrigation() + GetPointsPlanting() + GetPointsQuality() 
+        + GetPointsSeeding() + GetPointsSpring() + GetPointsTopping()) / 10;
+
     public override string ToString()
     {
         return $"{NO} {Region} {Farmer} {NumberOfField} {HA} {AutumnPloughing} {SpringPloughing} {Seeding} {Planting} {Irrigation} {Cultivation} {Fertilizing} {Topping} {Efficiency} {Quality}";
