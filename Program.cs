@@ -1,21 +1,23 @@
 ﻿using System.Net;
 using System.Text.Json;
-using System.Web;
 using Hackathon.Databases;
 using Hackathon.Models;
+using LightInject;
 
 namespace Hackathon;
 
 class Program {
+    public static ServiceContainer Container = new ServiceContainer();
     public delegate void Logger(string? text);
     public static async Task Main() {
         using var db = new FarmDbContext();
+        Container.RegisterInstance<FarmDbContext>(db);
+        Logger logger = LogWithDate;
 
         using var server = new HttpListener();
-        server.Prefixes.Add("http://*:80/");
+        server.Prefixes.Add("http://*:7888/");
         server.Start();
 
-        Logger logger = LogWithDate;
         logger("Server has started.");
         logger("Waiting for connection.");
 
@@ -29,24 +31,21 @@ class Program {
             logger($"Client has connected from IP: {request.RemoteEndPoint}");
             using var writer = new StreamWriter(response.OutputStream);
 
+            var url = request.RawUrl;
+            if (url is null) {
+                await writer.FlushAsync();
+                continue;
+            }
+
+            var routs = url.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (routs is null || routs.Length <= 2) {
+                await writer.FlushAsync();
+                continue;
+            }
+
             if (request.HttpMethod == HttpMethod.Get.Method) {
-                var url = request.RawUrl;
-                if (url is null) {
-                    await writer.FlushAsync();
-                    continue;
-                }
-
-                var routs = url.Split('/', StringSplitOptions.RemoveEmptyEntries);
-                if (routs is null || routs.Length == 0) {
-                    await writer.FlushAsync();
-                    continue;
-                }
-
-                if (routs[0].StartsWith("farms")) {
+                if (routs[2].StartsWith("farms")) {
                     logger("Farms GET request");
-                    var @params = context.Request.QueryString;
-
-                    var callback = @params["callback"];
 
                     var list = from farm in db.Farms
                                select new {
@@ -55,46 +54,27 @@ class Program {
                                    farmer = $"{farm.Farmer}",
                                    n_fields = farm.NumberOfFields,
                                    ha = farm.HA,
-                                   autumn = (int)farm.GetPointsAutumn(),
-                                   spring = (int)farm.GetPointsSpring(),
-                                   seeding = (int)farm.GetPointsSeeding(),
-                                   planting = (int)farm.GetPointsPlanting(),
-                                   irrigation = (int)farm.GetPointsIrrigation(),
-                                   cultivation = (int)farm.GetPointsCultivation(),
-                                   fertilizing = (int)farm.GetPointsFertilizing(),
-                                   topping = (int)farm.GetPointsTopping(),
-                                   efficiency = (int)farm.GetPointsEfficiency(),
-                                   quality = (int)farm.GetPointsQuality(),
-                                   index = (int)farm.GetPoints(),
+                                   autumn = (int)GetPointsAutumn(farm),
+                                   spring = (int)GetPointsSpring(farm),
+                                   seeding = (int)GetPointsSeeding(farm),
+                                   planting = (int)GetPointsPlanting(farm),
+                                   irrigation = (int)GetPointsIrrigation(farm),
+                                   cultivation = (int)GetPointsCultivation(farm),
+                                   fertilizing = (int)GetPointsFertilizing(farm),
+                                   topping = (int)GetPointsTopping(farm),
+                                   efficiency = (int)GetPointsEfficiency(farm),
+                                   quality = (int)GetPointsQuality(farm),
+                                   index = (int)GetPoints(farm),
                                };
-
                     string json = JsonSerializer.Serialize(list);
                     await writer.WriteAsync(json);
-                }
-                else if (routs[0].StartsWith("consts")) {
+                } else if (routs[2].StartsWith("consts")) {
                     logger("Constants GET request");
-                    var @params = request.QueryString;
-
-                    var callback = @params["callback"];
-
                     string json = JsonSerializer.Serialize(db.Constants.ToList());
                     await writer.WriteAsync(json);
                 }
-            }
-            else if (request.HttpMethod == HttpMethod.Post.Method) {
-                var url = request.RawUrl;
-                if (url is null) {
-                    await writer.FlushAsync();
-                    continue;
-                }
-
-                var routs = url.Split('/', StringSplitOptions.RemoveEmptyEntries);
-                if (routs is null || routs.Length == 0) {
-                    await writer.FlushAsync();
-                    continue;
-                }
-
-                if (routs[0].StartsWith("farm")) {
+            } else if (request.HttpMethod == HttpMethod.Post.Method) {
+                if (routs[2].StartsWith("farm")) {
                     logger("Add Farm POST request");
                     using var reader = new StreamReader(request.InputStream);
                     string json = await reader.ReadToEndAsync();
@@ -105,14 +85,13 @@ class Program {
                             response.StatusCode = (int)HttpStatusCode.BadRequest;
                         } else {
                             response.StatusCode = (int)HttpStatusCode.OK;
-                            // db.Farms.Add(farm);
-                            // await db.SaveChangesAsync();
-                            System.Console.WriteLine(farm);
+                            db.Farms.Add(farm);
+                            await db.SaveChangesAsync();
                         }
                     } catch (System.Text.Json.JsonException) {
                         response.StatusCode = (int)HttpStatusCode.BadRequest;
                     }                  
-                } else if (routs[0].StartsWith("addconst")) {
+                } else if (routs[2].StartsWith("addconst")) {
                     logger("Add Const POST request");
                     using var reader = new StreamReader(request.InputStream);
                     string json = await reader.ReadToEndAsync();
@@ -130,7 +109,6 @@ class Program {
                                 search.Value = constant.Value;
                             }
                             await db.SaveChangesAsync();
-                            Console.WriteLine(constant);
                         }
                     } catch (System.Text.Json.JsonException) {
                         response.StatusCode = (int)HttpStatusCode.BadRequest;
@@ -143,6 +121,8 @@ class Program {
         }
     }
 
+    public static int GetPenalty(string name, int defaultValue) => Container.GetInstance<FarmDbContext>().Constants.Where(c => c.Name == name).FirstOrDefault()?.Value ?? defaultValue;
+
     public static void LogWithDate(string? value) {
         Console.WriteLine($"[{DateTime.Now}] {value}");
     }
@@ -153,28 +133,29 @@ class Program {
 
         double scoreDate = 100.0;
 
+        var datePenalty = GetPenalty("AutumnDatePenalty", 20);
+
         var autumnStart = new DateTime(farm.AutumnPloughing.Date.Year, 3, 15);
         var autumnEnd = new DateTime(farm.AutumnPloughing.Date.Year, 4, 15);
 
         if (farm.AutumnPloughing.Date < autumnStart)
-            scoreDate -= (autumnStart - farm.AutumnPloughing.Date).Days * 20;
+            scoreDate -= (autumnStart - farm.AutumnPloughing.Date).Days * datePenalty;
         if (farm.AutumnPloughing.Date > autumnEnd)
-            scoreDate -= (farm.AutumnPloughing.Date - autumnEnd).Days * 20;
+            scoreDate -= (farm.AutumnPloughing.Date - autumnEnd).Days * datePenalty;
         if (scoreDate < 0)
             scoreDate = 0;
 
         var scoreDepth = 100.0;
+
+        var depthPenalty = GetPenalty("AutumnDepthPenalty", 10);
+
         if (farm.AutumnPloughing.Depth < 25)
-            scoreDepth -= (25 - farm.AutumnPloughing.Depth) * 10;
+            scoreDepth -= (25 - farm.AutumnPloughing.Depth) * depthPenalty;
         if (scoreDepth < 0)
             scoreDepth = 0;
 
         var score = ((scoreDate + scoreDepth) / 2) * (farm.AutumnPloughing.AppliedHA / farm.HA);
         return score;
-    }
-
-    public static async Task<double> GetPointsAutumnAsync(Farm farm) {
-        return await Task.Run(() => GetPointsAutumn(farm));
     }
 
     public static double GetPointsSpring(Farm farm) {
@@ -183,28 +164,29 @@ class Program {
 
         double scoreDate = 100.0;
 
+        var datePenalty = GetPenalty("SpringDatePenalty", 20);
+
         var springStart = new DateTime(farm.SpringPloughing.Date.Year, 3, 15);
         var springEnd = new DateTime(farm.SpringPloughing.Date.Year, 4, 15);
 
         if (farm.SpringPloughing.Date < springStart)
-            scoreDate -= (springStart - farm.SpringPloughing.Date).Days * 20;
+            scoreDate -= (springStart - farm.SpringPloughing.Date).Days * datePenalty;
         if (farm.SpringPloughing.Date > springEnd)
-            scoreDate -= (farm.SpringPloughing.Date - springEnd).Days * 20;
+            scoreDate -= (farm.SpringPloughing.Date - springEnd).Days * datePenalty;
         if (scoreDate < 0)
             scoreDate = 0;
 
         var scoreDepth = 100.0;
+
+        var depthPenalty = GetPenalty("SpringDepthPenalty", 10);
+
         if (farm.SpringPloughing.Depth < 15)
-            scoreDepth -= (15 - farm.SpringPloughing.Depth) * 10;
+            scoreDepth -= (15 - farm.SpringPloughing.Depth) * depthPenalty;
         if (scoreDepth < 0)
             scoreDepth = 0;
 
         var score = ((scoreDate + scoreDepth) / 2) * (farm.SpringPloughing.AppliedHA / farm.HA);
         return score;
-    }
-
-    public static async Task<double> GetPointsSpringAsync(Farm farm) {
-        return await Task.Run(() => GetPointsSpring(farm));
     }
 
     public static double GetPointsSeeding(Farm farm) {
@@ -227,10 +209,6 @@ class Program {
         return result;
     }
 
-    public static async Task<double> GetPointsSeedingAsync(Farm farm) {
-        return await Task.Run(() => GetPointsSeeding(farm));
-    }
-
     public static double GetPointsPlanting(Farm farm) {
         if (farm.Planting is null)
             return 0.0;
@@ -240,10 +218,12 @@ class Program {
 
         double scoreDate = 100.0;
 
+        var penalty = GetPenalty("PlantingPenalty", 20);
+
         var plantingEnd = new DateTime(farm.Planting.Date.Year, 5, 15);
 
         if (farm.Planting.Date > plantingEnd)
-            scoreDate -= (farm.Planting.Date - plantingEnd).Days * 20;
+            scoreDate -= (farm.Planting.Date - plantingEnd).Days * penalty;
         if (scoreDate < 0)
             scoreDate = 0;
 
@@ -251,10 +231,6 @@ class Program {
         scoreDate *= farm.Planting.AppliedHA / farm.HA;
 
         return scoreDate;
-    }
-
-    public static async Task<double> GetPointsPlantingAsync(Farm farm) {
-        return await Task.Run(() => GetPointsPlanting(farm));
     }
 
     public static double GetPointsIrrigation(Farm farm) {
@@ -274,10 +250,6 @@ class Program {
         return score;
     }
 
-    public static async Task<double> GetPointsIrrigationAsync(Farm farm) {
-        return await Task.Run(() => GetPointsIrrigation(farm));
-    }
-
     public static double GetPointsCultivation(Farm farm) {
         if (farm.Cultivation is null)
             return 0.0;
@@ -289,10 +261,6 @@ class Program {
         return score;
     }
 
-    public static async Task<double> GetPointsCultivationAsync(Farm farm) {
-        return await Task.Run(() => GetPointsCultivation(farm));
-    }
-
     public static double GetPointsFertilizing(Farm farm) {
         if (farm.Fertilizing is null || farm.Planting is null)
             return 0.0;
@@ -302,13 +270,12 @@ class Program {
 
         var score = 100.0;
         var difference = Math.Abs((farm.Planting.Date - farm.Fertilizing.Date).Days);
-        if (difference > 15)
-            score -= (difference - 15) * 25;
-        return score >= 0.0 ? score : 0.0;
-    }
 
-    public static async Task<double> GetPointsFertilizingAsync(Farm farm) {
-        return await Task.Run(() => GetPointsFertilizing(farm));
+        var penalty = GetPenalty("FertilizingPenalty", 25);
+
+        if (difference > 15)
+            score -= (difference - 15) * penalty;
+        return score >= 0.0 ? score : 0.0;
     }
 
     public static double GetPointsTopping(Farm farm) {
@@ -321,10 +288,6 @@ class Program {
         return 100.0 * farm.Topping.AppliedHA / farm.HA;
     }
 
-    public static async Task<double> GetPointsToppingAsync(Farm farm) {
-        return await Task.Run(() => GetPointsTopping(farm));
-    }
-
     public static double GetPointsEfficiency(Farm farm) {
         if (farm.Efficiency is null)
             return 0.0;
@@ -332,12 +295,10 @@ class Program {
         if (farm.Efficiency.Tons >= 14000)
             return 100.0;
 
-        var score = 100.0 - 25 * (14000 - farm.Efficiency.Tons) / 1000;
-        return score >= 0 ? score : 0.0;
-    }
+        var penalty = GetPenalty("Efficiency", 25);
 
-    public static async Task<double> GetPointsEfficiencyAsync(Farm farm) {
-        return await Task.Run(() => GetPointsEfficiency(farm));
+        var score = 100.0 - penalty * (14000 - farm.Efficiency.Tons) / 1000;
+        return score >= 0 ? score : 0.0;
     }
 
     public static double GetPointsQuality(Farm farm) {
@@ -347,30 +308,11 @@ class Program {
         return farm.Quality.Score;
     }
 
-    public static async Task<double> GetPointsQualityAsync(Farm farm) {
-        return await Task.Run(() => GetPointsQuality(farm));
-    }
-
     public static double GetPoints(Farm farm) {
         var sum = GetPointsAutumn(farm) + GetPointsSpring(farm) + GetPointsSeeding(farm) +
             GetPointsPlanting(farm) + GetPointsIrrigation(farm) + GetPointsCultivation(farm) +
             GetPointsFertilizing(farm) + GetPointsTopping(farm) + GetPointsEfficiency(farm);
 
         return sum / 10;
-    }
-
-    public static async Task<double> GetPointsAsync(Farm farm) {
-        return await Task.Run(async () => {
-            var sum = await GetPointsAutumnAsync(farm)
-                + await GetPointsSpringAsync(farm)
-                + await GetPointsSeedingAsync(farm)
-                + await GetPointsPlantingAsync(farm)
-                + await GetPointsIrrigationAsync(farm)
-                + await GetPointsCultivationAsync(farm)
-                + await GetPointsFertilizingAsync(farm)
-                + await GetPointsToppingAsync(farm)
-                + await GetPointsEfficiencyAsync(farm);
-            return sum / 10;
-        });
     }
 }
