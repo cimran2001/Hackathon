@@ -1,9 +1,5 @@
-﻿using System.Globalization;
-using System.Net;
-using System.Text;
+﻿using System.Net;
 using System.Text.Json;
-using CsvHelper;
-using CsvHelper.Configuration;
 using Hackathon.Databases;
 using Hackathon.Models;
 
@@ -13,6 +9,12 @@ class Program {
     public delegate void Logger(string? text);
     public static async Task Main() {
         using var db = new FarmDbContext();
+
+        for (int i = 0; i < 3; i++) {
+            db.Farms.Remove(db.Farms.ToArray().Last());
+        }
+
+        return;
 
         using var server = new HttpListener();
         server.Prefixes.Add("http://*:80/");
@@ -24,34 +26,84 @@ class Program {
 
         while (true) {
             var context = await server.GetContextAsync();
-            logger($"Client has connected from IP: {context.Request.RemoteEndPoint}");
+
+            var request = context.Request;
+            var response = context.Response;
+
+            logger($"Client has connected from IP: {request.RemoteEndPoint}");
+            using var writer = new StreamWriter(response.OutputStream);
             
-            var @params = context.Request.QueryString;
-            var callback = @params["callback"];
+            if (request.HttpMethod == HttpMethod.Get.Method) {
+                var url = request.RawUrl;
+                if (url is null) {
+                    await writer.FlushAsync();
+                    continue;
+                }
+                
+                var routs = url.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                if (routs is null || routs.Length == 0){
+                    await writer.FlushAsync();
+                    continue;
+                }
+                
+                if (routs[0] == "farms") {
+                    var @params = context.Request.QueryString;
+            
+                    var callback = @params["callback"];
 
-            var list = from farm in db.Farms
-                select new {
-                    id = farm.Id,
-                    region = farm.Region,
-                    farmer = $"{farm.Farmer}",
-                    n_fields = farm.NumberOfField,
-                    ha = farm.HA,
-                    autumn = (int)farm.GetPointsAutumn(),
-                    spring = (int)farm.GetPointsSpring(),
-                    seeding = (int)farm.GetPointsSeeding(),
-                    planting = (int)farm.GetPointsPlanting(),
-                    irrigation = (int)farm.GetPointsIrrigation(),
-                    cultivation = (int)farm.GetPointsCultivation(),
-                    fertilizing = (int)farm.GetPointsFertilizing(),
-                    topping = (int)farm.GetPointsTopping(),
-                    efficiency = (int)farm.GetPointsEfficiency(),
-                    quality = (int)farm.GetPointsQuality(),
-                    index = (int)farm.GetPoints(),
-                };
+                    var list = from farm in db.Farms
+                        select new {
+                            id = farm.Id,
+                            region = farm.Region,
+                            farmer = $"{farm.Farmer}",
+                            n_fields = farm.NumberOfFields,
+                            ha = farm.HA,
+                            autumn = (int)farm.GetPointsAutumn(),
+                            spring = (int)farm.GetPointsSpring(),
+                            seeding = (int)farm.GetPointsSeeding(),
+                            planting = (int)farm.GetPointsPlanting(),
+                            irrigation = (int)farm.GetPointsIrrigation(),
+                            cultivation = (int)farm.GetPointsCultivation(),
+                            fertilizing = (int)farm.GetPointsFertilizing(),
+                            topping = (int)farm.GetPointsTopping(),
+                            efficiency = (int)farm.GetPointsEfficiency(),
+                            quality = (int)farm.GetPointsQuality(),
+                            index = (int)farm.GetPoints(),
+                        };
 
-            using var writer = new StreamWriter(context.Response.OutputStream);
-            string json = $"{callback}({JsonSerializer.Serialize(list)})";
-            await writer.WriteAsync(json);
+                    string json = $"{callback}({JsonSerializer.Serialize(list)})";
+                    await writer.WriteAsync(json);
+                } else if (routs[0] == "consts") {
+                    var @params = context.Request.QueryString;
+            
+                    var callback = @params["callback"];
+
+                    string json = $"{callback}({JsonSerializer.Serialize(db.Constants.ToList())})";
+                    await writer.WriteAsync(json);
+                }
+            } else if (request.HttpMethod == HttpMethod.Post.Method) {
+                string json;
+                using var reader = new StreamReader(request.InputStream, request.ContentEncoding);
+                json = await reader.ReadToEndAsync();
+
+                try {
+                    var farm = JsonSerializer.Deserialize<Farm>(json);
+                    if (farm is null) {
+                        response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    } else {
+                        response.StatusCode = (int)HttpStatusCode.OK;
+                        db.Farms.Add(farm);
+                        await db.SaveChangesAsync();
+                    }
+                } catch (Exception) {
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                }
+                await writer.WriteAsync(JsonSerializer.Serialize(response));        
+            } else if (request.HttpMethod == HttpMethod.Patch.Method) {
+
+            }
+
+
             await writer.FlushAsync();
         }
     }

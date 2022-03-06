@@ -5,8 +5,8 @@ using Microsoft.Extensions.Configuration;
 namespace Hackathon.Databases;
 
 class FarmDbContext : DbContext {
+    public DbSet<Constant> Constants { get; set; } = null!;
     public DbSet<Farm> Farms { get; set; } = null!;
-
     public DbSet<AutumnPloughing> AutumnPloughings { get; set; } = null!;
     public DbSet<Cultivation> Cultivations { get; set; } = null!;
     public DbSet<Efficiency> Efficiencies { get; set; } = null!;

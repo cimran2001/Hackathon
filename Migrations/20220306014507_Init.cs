@@ -13,11 +13,11 @@ namespace Hackathon.Migrations
                 name: "AutumnPloughings",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     AppliedHA = table.Column<double>(type: "float", nullable: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Depth = table.Column<int>(type: "int", nullable: false)
+                    Depth = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -25,10 +25,24 @@ namespace Hackathon.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Constants",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Value = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Constants", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Cultivations",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     AppliedHA = table.Column<double>(type: "float", nullable: false),
                     NumberOfTimes = table.Column<long>(type: "bigint", nullable: false)
@@ -42,9 +56,9 @@ namespace Hackathon.Migrations
                 name: "Efficiencies",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Tons = table.Column<double>(type: "float", nullable: false)
+                    Tons = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -55,7 +69,7 @@ namespace Hackathon.Migrations
                 name: "Farmers",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
@@ -68,7 +82,7 @@ namespace Hackathon.Migrations
                 name: "Fertilizings",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     AppliedHA = table.Column<double>(type: "float", nullable: false),
                     Integrity = table.Column<bool>(type: "bit", nullable: false),
@@ -83,7 +97,7 @@ namespace Hackathon.Migrations
                 name: "Irrigations",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     AppliedHA = table.Column<double>(type: "float", nullable: false),
                     NumberOfTimes = table.Column<long>(type: "bigint", nullable: false)
@@ -97,11 +111,11 @@ namespace Hackathon.Migrations
                 name: "Plantings",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     AppliedHA = table.Column<double>(type: "float", nullable: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PlantPopulation = table.Column<double>(type: "float", nullable: false)
+                    PlantPopulation = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -112,7 +126,7 @@ namespace Hackathon.Migrations
                 name: "Qualities",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Score = table.Column<long>(type: "bigint", nullable: false)
                 },
@@ -125,7 +139,7 @@ namespace Hackathon.Migrations
                 name: "Seedings",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     IntervalCM = table.Column<long>(type: "bigint", nullable: false),
                     Standart = table.Column<bool>(type: "bit", nullable: false)
@@ -139,11 +153,11 @@ namespace Hackathon.Migrations
                 name: "SpringPloughings",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     AppliedHA = table.Column<double>(type: "float", nullable: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Depth = table.Column<int>(type: "int", nullable: false)
+                    Depth = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -154,7 +168,7 @@ namespace Hackathon.Migrations
                 name: "Toppings",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     AppliedHA = table.Column<double>(type: "float", nullable: false),
                     Spraying = table.Column<bool>(type: "bit", nullable: false)
@@ -168,23 +182,22 @@ namespace Hackathon.Migrations
                 name: "Farms",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    NO = table.Column<long>(type: "bigint", nullable: false),
                     Region = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FarmerId = table.Column<int>(type: "int", nullable: true),
-                    NumberOfField = table.Column<long>(type: "bigint", nullable: false),
+                    FarmerId = table.Column<long>(type: "bigint", nullable: true),
+                    NumberOfFields = table.Column<long>(type: "bigint", nullable: false),
                     HA = table.Column<double>(type: "float", nullable: false),
-                    AutumnPloughingId = table.Column<int>(type: "int", nullable: true),
-                    SpringPloughingId = table.Column<int>(type: "int", nullable: true),
-                    SeedingId = table.Column<int>(type: "int", nullable: true),
-                    PlantingId = table.Column<int>(type: "int", nullable: true),
-                    IrrigationId = table.Column<int>(type: "int", nullable: true),
-                    CultivationId = table.Column<int>(type: "int", nullable: true),
-                    FertilizingId = table.Column<int>(type: "int", nullable: true),
-                    ToppingId = table.Column<int>(type: "int", nullable: true),
-                    EfficiencyId = table.Column<int>(type: "int", nullable: true),
-                    QualityId = table.Column<int>(type: "int", nullable: true)
+                    AutumnPloughingId = table.Column<long>(type: "bigint", nullable: true),
+                    SpringPloughingId = table.Column<long>(type: "bigint", nullable: true),
+                    SeedingId = table.Column<long>(type: "bigint", nullable: true),
+                    PlantingId = table.Column<long>(type: "bigint", nullable: true),
+                    IrrigationId = table.Column<long>(type: "bigint", nullable: true),
+                    CultivationId = table.Column<long>(type: "bigint", nullable: true),
+                    FertilizingId = table.Column<long>(type: "bigint", nullable: true),
+                    ToppingId = table.Column<long>(type: "bigint", nullable: true),
+                    EfficiencyId = table.Column<long>(type: "bigint", nullable: true),
+                    QualityId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -304,6 +317,9 @@ namespace Hackathon.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Constants");
+
             migrationBuilder.DropTable(
                 name: "Farms");
 

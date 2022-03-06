@@ -24,11 +24,11 @@ namespace Hackathon.Migrations
 
             modelBuilder.Entity("Hackathon.Models.AutumnPloughing", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<double>("AppliedHA")
                         .HasColumnType("float");
@@ -36,21 +36,41 @@ namespace Hackathon.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Depth")
-                        .HasColumnType("int");
+                    b.Property<long>("Depth")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
                     b.ToTable("AutumnPloughings");
                 });
 
-            modelBuilder.Entity("Hackathon.Models.Cultivation", b =>
+            modelBuilder.Entity("Hackathon.Models.Constant", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Value")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    b.HasKey("Id");
+
+                    b.ToTable("Constants");
+                });
+
+            modelBuilder.Entity("Hackathon.Models.Cultivation", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<double>("AppliedHA")
                         .HasColumnType("float");
@@ -65,11 +85,11 @@ namespace Hackathon.Migrations
 
             modelBuilder.Entity("Hackathon.Models.Efficiency", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<int>("Tons")
                         .HasColumnType("int");
@@ -81,57 +101,54 @@ namespace Hackathon.Migrations
 
             modelBuilder.Entity("Hackathon.Models.Farm", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
-                    b.Property<int?>("AutumnPloughingId")
-                        .HasColumnType("int");
+                    b.Property<long?>("AutumnPloughingId")
+                        .HasColumnType("bigint");
 
-                    b.Property<int?>("CultivationId")
-                        .HasColumnType("int");
+                    b.Property<long?>("CultivationId")
+                        .HasColumnType("bigint");
 
-                    b.Property<int?>("EfficiencyId")
-                        .HasColumnType("int");
+                    b.Property<long?>("EfficiencyId")
+                        .HasColumnType("bigint");
 
-                    b.Property<int?>("FarmerId")
-                        .HasColumnType("int");
+                    b.Property<long?>("FarmerId")
+                        .HasColumnType("bigint");
 
-                    b.Property<int?>("FertilizingId")
-                        .HasColumnType("int");
+                    b.Property<long?>("FertilizingId")
+                        .HasColumnType("bigint");
 
                     b.Property<double>("HA")
                         .HasColumnType("float");
 
-                    b.Property<int?>("IrrigationId")
-                        .HasColumnType("int");
-
-                    b.Property<long>("NO")
+                    b.Property<long?>("IrrigationId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("NumberOfField")
+                    b.Property<long>("NumberOfFields")
                         .HasColumnType("bigint");
 
-                    b.Property<int?>("PlantingId")
-                        .HasColumnType("int");
+                    b.Property<long?>("PlantingId")
+                        .HasColumnType("bigint");
 
-                    b.Property<int?>("QualityId")
-                        .HasColumnType("int");
+                    b.Property<long?>("QualityId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Region")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("SeedingId")
-                        .HasColumnType("int");
+                    b.Property<long?>("SeedingId")
+                        .HasColumnType("bigint");
 
-                    b.Property<int?>("SpringPloughingId")
-                        .HasColumnType("int");
+                    b.Property<long?>("SpringPloughingId")
+                        .HasColumnType("bigint");
 
-                    b.Property<int?>("ToppingId")
-                        .HasColumnType("int");
+                    b.Property<long?>("ToppingId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -162,11 +179,11 @@ namespace Hackathon.Migrations
 
             modelBuilder.Entity("Hackathon.Models.Farmer", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -179,11 +196,11 @@ namespace Hackathon.Migrations
 
             modelBuilder.Entity("Hackathon.Models.Fertilizing", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<double>("AppliedHA")
                         .HasColumnType("float");
@@ -201,11 +218,11 @@ namespace Hackathon.Migrations
 
             modelBuilder.Entity("Hackathon.Models.Irrigation", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<double>("AppliedHA")
                         .HasColumnType("float");
@@ -220,11 +237,11 @@ namespace Hackathon.Migrations
 
             modelBuilder.Entity("Hackathon.Models.Planting", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<double>("AppliedHA")
                         .HasColumnType("float");
@@ -232,8 +249,8 @@ namespace Hackathon.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("PlantPopulation")
-                        .HasColumnType("int");
+                    b.Property<long>("PlantPopulation")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -242,11 +259,11 @@ namespace Hackathon.Migrations
 
             modelBuilder.Entity("Hackathon.Models.Quality", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<long>("Score")
                         .HasColumnType("bigint");
@@ -258,11 +275,11 @@ namespace Hackathon.Migrations
 
             modelBuilder.Entity("Hackathon.Models.Seeding", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<long>("IntervalCM")
                         .HasColumnType("bigint");
@@ -277,11 +294,11 @@ namespace Hackathon.Migrations
 
             modelBuilder.Entity("Hackathon.Models.SpringPloughing", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<double>("AppliedHA")
                         .HasColumnType("float");
@@ -289,8 +306,8 @@ namespace Hackathon.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Depth")
-                        .HasColumnType("int");
+                    b.Property<long>("Depth")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -299,11 +316,11 @@ namespace Hackathon.Migrations
 
             modelBuilder.Entity("Hackathon.Models.Topping", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<double>("AppliedHA")
                         .HasColumnType("float");
