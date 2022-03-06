@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
+using System.Web;
 using Hackathon.Databases;
 using Hackathon.Models;
 
@@ -23,6 +24,7 @@ class Program {
 
             var request = context.Request;
             var response = context.Response;
+            response.AddHeader("Access-Control-Allow-Origin", "*");
 
             logger($"Client has connected from IP: {request.RemoteEndPoint}");
             using var writer = new StreamWriter(response.OutputStream);
@@ -40,7 +42,7 @@ class Program {
                     continue;
                 }
 
-                if (routs[0] == "farms") {
+                if (routs[0].StartsWith("farms")) {
                     logger("Farms GET request");
                     var @params = context.Request.QueryString;
 
@@ -66,50 +68,77 @@ class Program {
                                    index = (int)farm.GetPoints(),
                                };
 
-                    string json = $"{callback}({JsonSerializer.Serialize(list)})";
+                    string json = JsonSerializer.Serialize(list);
                     await writer.WriteAsync(json);
                 }
-                else if (routs[0] == "consts") {
+                else if (routs[0].StartsWith("consts")) {
                     logger("Constants GET request");
-                    var @params = context.Request.QueryString;
+                    var @params = request.QueryString;
 
                     var callback = @params["callback"];
 
-                    string json = $"{callback}({JsonSerializer.Serialize(db.Constants.ToList())})";
+                    string json = JsonSerializer.Serialize(db.Constants.ToList());
                     await writer.WriteAsync(json);
                 }
             }
             else if (request.HttpMethod == HttpMethod.Post.Method) {
-                logger("Add Farm POST request");
-                string json;
-                using var reader = new StreamReader(request.InputStream);
-                json = reader.ReadToEnd();
-                
-                // try {
-                    // var farm = JsonSerializer.Deserialize<Farm>(json);
-                    var farm = Newtonsoft.Json.JsonConvert.DeserializeObject<Farm>(json);
-                    if (farm is null) {
+                var url = request.RawUrl;
+                if (url is null) {
+                    await writer.FlushAsync();
+                    continue;
+                }
+
+                var routs = url.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                if (routs is null || routs.Length == 0) {
+                    await writer.FlushAsync();
+                    continue;
+                }
+
+                if (routs[0].StartsWith("farm")) {
+                    logger("Add Farm POST request");
+                    using var reader = new StreamReader(request.InputStream);
+                    string json = await reader.ReadToEndAsync();
+                    
+                    try {
+                        var farm = JsonSerializer.Deserialize<Farm>(json);
+                        if (farm is null) {
+                            response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        } else {
+                            response.StatusCode = (int)HttpStatusCode.OK;
+                            // db.Farms.Add(farm);
+                            // await db.SaveChangesAsync();
+                            System.Console.WriteLine(farm);
+                        }
+                    } catch (System.Text.Json.JsonException) {
+                        response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    }                  
+                } else if (routs[0].StartsWith("addconst")) {
+                    logger("Add Const POST request");
+                    using var reader = new StreamReader(request.InputStream);
+                    string json = await reader.ReadToEndAsync();
+
+                    try {
+                        var constant = JsonSerializer.Deserialize<Constant>(json);
+                        if (constant is null) {
+                            response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        } else {
+                            response.StatusCode = (int)HttpStatusCode.OK;
+                            var search = db.Constants.Where(c => c.Name == constant.Name).FirstOrDefault();
+                            if (search is null) {
+                                db.Constants.Add(constant);
+                            } else {
+                                search.Value = constant.Value;
+                            }
+                            await db.SaveChangesAsync();
+                            Console.WriteLine(constant);
+                        }
+                    } catch (System.Text.Json.JsonException) {
                         response.StatusCode = (int)HttpStatusCode.BadRequest;
                     }
-                    else {
-                        response.StatusCode = (int)HttpStatusCode.OK;
-                        // db.Farms.Add(farm);
-                        // await db.SaveChangesAsync();
-                        System.Console.WriteLine(farm);
-                    }
-                // }
-                // catch (System.Text.Json.JsonException) {
-                //     response.StatusCode = (int)HttpStatusCode.BadRequest;
-                // }
-
-                
-                await writer.WriteAsync("Hello, world!");                
+                } else {
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                }
             }
-            else if (request.HttpMethod == HttpMethod.Patch.Method)
-            {
-                // TODO: Patch
-            }
-
             await writer.FlushAsync();
         }
     }
@@ -325,7 +354,7 @@ class Program {
     public static double GetPoints(Farm farm) {
         var sum = GetPointsAutumn(farm) + GetPointsSpring(farm) + GetPointsSeeding(farm) +
             GetPointsPlanting(farm) + GetPointsIrrigation(farm) + GetPointsCultivation(farm) +
-            GetPointsFertilizing(farm) + GetPointsTopping(farm) + GetPointsEfficiency(farm) + GetPointsQuality(farm);
+            GetPointsFertilizing(farm) + GetPointsTopping(farm) + GetPointsEfficiency(farm);
 
         return sum / 10;
     }
@@ -340,8 +369,7 @@ class Program {
                 + await GetPointsCultivationAsync(farm)
                 + await GetPointsFertilizingAsync(farm)
                 + await GetPointsToppingAsync(farm)
-                + await GetPointsEfficiencyAsync(farm)
-                + await GetPointsQualityAsync(farm);
+                + await GetPointsEfficiencyAsync(farm);
             return sum / 10;
         });
     }
