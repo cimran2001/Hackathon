@@ -10,12 +10,6 @@ class Program {
     public static async Task Main() {
         using var db = new FarmDbContext();
 
-        for (int i = 0; i < 3; i++) {
-            db.Farms.Remove(db.Farms.ToArray().Last());
-        }
-
-        return;
-
         using var server = new HttpListener();
         server.Prefixes.Add("http://*:80/");
         server.Start();
@@ -32,77 +26,89 @@ class Program {
 
             logger($"Client has connected from IP: {request.RemoteEndPoint}");
             using var writer = new StreamWriter(response.OutputStream);
-            
+
             if (request.HttpMethod == HttpMethod.Get.Method) {
                 var url = request.RawUrl;
                 if (url is null) {
                     await writer.FlushAsync();
                     continue;
                 }
-                
+
                 var routs = url.Split('/', StringSplitOptions.RemoveEmptyEntries);
-                if (routs is null || routs.Length == 0){
+                if (routs is null || routs.Length == 0) {
                     await writer.FlushAsync();
                     continue;
                 }
-                
+
                 if (routs[0] == "farms") {
+                    logger("Farms GET request");
                     var @params = context.Request.QueryString;
-            
+
                     var callback = @params["callback"];
 
                     var list = from farm in db.Farms
-                        select new {
-                            id = farm.Id,
-                            region = farm.Region,
-                            farmer = $"{farm.Farmer}",
-                            n_fields = farm.NumberOfFields,
-                            ha = farm.HA,
-                            autumn = (int)farm.GetPointsAutumn(),
-                            spring = (int)farm.GetPointsSpring(),
-                            seeding = (int)farm.GetPointsSeeding(),
-                            planting = (int)farm.GetPointsPlanting(),
-                            irrigation = (int)farm.GetPointsIrrigation(),
-                            cultivation = (int)farm.GetPointsCultivation(),
-                            fertilizing = (int)farm.GetPointsFertilizing(),
-                            topping = (int)farm.GetPointsTopping(),
-                            efficiency = (int)farm.GetPointsEfficiency(),
-                            quality = (int)farm.GetPointsQuality(),
-                            index = (int)farm.GetPoints(),
-                        };
+                               select new {
+                                   id = farm.Id,
+                                   region = farm.Region,
+                                   farmer = $"{farm.Farmer}",
+                                   n_fields = farm.NumberOfFields,
+                                   ha = farm.HA,
+                                   autumn = (int)farm.GetPointsAutumn(),
+                                   spring = (int)farm.GetPointsSpring(),
+                                   seeding = (int)farm.GetPointsSeeding(),
+                                   planting = (int)farm.GetPointsPlanting(),
+                                   irrigation = (int)farm.GetPointsIrrigation(),
+                                   cultivation = (int)farm.GetPointsCultivation(),
+                                   fertilizing = (int)farm.GetPointsFertilizing(),
+                                   topping = (int)farm.GetPointsTopping(),
+                                   efficiency = (int)farm.GetPointsEfficiency(),
+                                   quality = (int)farm.GetPointsQuality(),
+                                   index = (int)farm.GetPoints(),
+                               };
 
                     string json = $"{callback}({JsonSerializer.Serialize(list)})";
                     await writer.WriteAsync(json);
-                } else if (routs[0] == "consts") {
+                }
+                else if (routs[0] == "consts") {
+                    logger("Constants GET request");
                     var @params = context.Request.QueryString;
-            
+
                     var callback = @params["callback"];
 
                     string json = $"{callback}({JsonSerializer.Serialize(db.Constants.ToList())})";
                     await writer.WriteAsync(json);
                 }
-            } else if (request.HttpMethod == HttpMethod.Post.Method) {
+            }
+            else if (request.HttpMethod == HttpMethod.Post.Method) {
+                logger("Add Farm POST request");
                 string json;
-                using var reader = new StreamReader(request.InputStream, request.ContentEncoding);
-                json = await reader.ReadToEndAsync();
-
-                try {
-                    var farm = JsonSerializer.Deserialize<Farm>(json);
+                using var reader = new StreamReader(request.InputStream);
+                json = reader.ReadToEnd();
+                
+                // try {
+                    // var farm = JsonSerializer.Deserialize<Farm>(json);
+                    var farm = Newtonsoft.Json.JsonConvert.DeserializeObject<Farm>(json);
                     if (farm is null) {
                         response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    } else {
-                        response.StatusCode = (int)HttpStatusCode.OK;
-                        db.Farms.Add(farm);
-                        await db.SaveChangesAsync();
                     }
-                } catch (Exception) {
-                    response.StatusCode = (int)HttpStatusCode.BadRequest;
-                }
-                await writer.WriteAsync(JsonSerializer.Serialize(response));        
-            } else if (request.HttpMethod == HttpMethod.Patch.Method) {
+                    else {
+                        response.StatusCode = (int)HttpStatusCode.OK;
+                        // db.Farms.Add(farm);
+                        // await db.SaveChangesAsync();
+                        System.Console.WriteLine(farm);
+                    }
+                // }
+                // catch (System.Text.Json.JsonException) {
+                //     response.StatusCode = (int)HttpStatusCode.BadRequest;
+                // }
 
+                
+                await writer.WriteAsync("Hello, world!");                
             }
-
+            else if (request.HttpMethod == HttpMethod.Patch.Method)
+            {
+                // TODO: Patch
+            }
 
             await writer.FlushAsync();
         }
@@ -115,7 +121,7 @@ class Program {
     public static double GetPointsAutumn(Farm farm) {
         if (farm.AutumnPloughing is null)
             return 0.0;
-        
+
         double scoreDate = 100.0;
 
         var autumnStart = new DateTime(farm.AutumnPloughing.Date.Year, 3, 15);
@@ -133,7 +139,7 @@ class Program {
             scoreDepth -= (25 - farm.AutumnPloughing.Depth) * 10;
         if (scoreDepth < 0)
             scoreDepth = 0;
-        
+
         var score = ((scoreDate + scoreDepth) / 2) * (farm.AutumnPloughing.AppliedHA / farm.HA);
         return score;
     }
@@ -145,7 +151,7 @@ class Program {
     public static double GetPointsSpring(Farm farm) {
         if (farm.SpringPloughing is null)
             return 0.0;
-        
+
         double scoreDate = 100.0;
 
         var springStart = new DateTime(farm.SpringPloughing.Date.Year, 3, 15);
@@ -163,7 +169,7 @@ class Program {
             scoreDepth -= (15 - farm.SpringPloughing.Depth) * 10;
         if (scoreDepth < 0)
             scoreDepth = 0;
-        
+
         var score = ((scoreDate + scoreDepth) / 2) * (farm.SpringPloughing.AppliedHA / farm.HA);
         return score;
     }
@@ -183,14 +189,12 @@ class Program {
 
         if (score < 0)
             return 0.0;
-        
+
         var result = score / 16 * 100;
 
-        if (score > 16) {
-            var fine = score - 16;
-            result = 100 - fine;
-        }
-        
+        if (score > 16)
+            result = 116 - score;
+
         return result;
     }
 
@@ -201,7 +205,7 @@ class Program {
     public static double GetPointsPlanting(Farm farm) {
         if (farm.Planting is null)
             return 0.0;
-        
+
         if (farm.Planting.PlantPopulation < 20000 || farm.Planting.PlantPopulation > 22000)
             return 0.0;
 
@@ -227,16 +231,16 @@ class Program {
     public static double GetPointsIrrigation(Farm farm) {
         if (farm.Irrigation is null)
             return 0.0;
-        
+
         var times = farm.Irrigation.NumberOfTimes - 3;
         if (times < 0)
             return 0.0;
 
         var score = 100.0;
-        
+
         if (times < 5)
             score *= times / 5;
-        
+
         score *= farm.Irrigation.AppliedHA / farm.HA;
         return score;
     }
@@ -248,10 +252,10 @@ class Program {
     public static double GetPointsCultivation(Farm farm) {
         if (farm.Cultivation is null)
             return 0.0;
-        
+
         var score = farm.Cultivation.NumberOfTimes >= 2 ? 100.0 : 0.0;
-        
-        
+
+
         score *= farm.Cultivation.AppliedHA / farm.HA;
         return score;
     }
@@ -295,10 +299,10 @@ class Program {
     public static double GetPointsEfficiency(Farm farm) {
         if (farm.Efficiency is null)
             return 0.0;
-        
+
         if (farm.Efficiency.Tons >= 14000)
             return 100.0;
-        
+
         var score = 100.0 - 25 * (14000 - farm.Efficiency.Tons) / 1000;
         return score >= 0 ? score : 0.0;
     }
@@ -319,8 +323,8 @@ class Program {
     }
 
     public static double GetPoints(Farm farm) {
-        var sum = GetPointsAutumn(farm) + GetPointsSpring(farm) + GetPointsSeeding(farm) + 
-            GetPointsPlanting(farm) + GetPointsIrrigation(farm) + GetPointsCultivation(farm) + 
+        var sum = GetPointsAutumn(farm) + GetPointsSpring(farm) + GetPointsSeeding(farm) +
+            GetPointsPlanting(farm) + GetPointsIrrigation(farm) + GetPointsCultivation(farm) +
             GetPointsFertilizing(farm) + GetPointsTopping(farm) + GetPointsEfficiency(farm) + GetPointsQuality(farm);
 
         return sum / 10;
